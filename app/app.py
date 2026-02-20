@@ -141,6 +141,16 @@ with tab_overview:
             f"{top_xg_player['xg']:.2f} xG",
         )
 
+    # Quick callouts
+    st.divider()
+    ttmp = team_df.copy()
+    top_team = ttmp.sort_values("goal_minus_xg", ascending=False).head(1)
+    low_team = ttmp.sort_values("goal_minus_xg", ascending=True).head(1)
+
+    c1, c2 = st.columns(2)
+    c1.info(f"**Top overperforming team:** {top_team['team'].iloc[0]} ({top_team['goal_minus_xg'].iloc[0]:.2f})")
+    c2.info(f"**Top underperforming team:** {low_team['team'].iloc[0]} ({low_team['goal_minus_xg'].iloc[0]:.2f})")
+    
     # -----------------------
     # 2️⃣ Model Performance (Bottom of page)
     # -----------------------
@@ -178,17 +188,6 @@ with tab_overview:
             - **ROC-AUC**: higher is better (ranking ability)
             """
         )
-
-    st.divider()
-
-    # Quick callouts
-    ttmp = team_df.copy()
-    top_team = ttmp.sort_values("goal_minus_xg", ascending=False).head(1)
-    low_team = ttmp.sort_values("goal_minus_xg", ascending=True).head(1)
-
-    c1, c2 = st.columns(2)
-    c1.info(f"**Top overperforming team:** {top_team['team'].iloc[0]} ({top_team['goal_minus_xg'].iloc[0]:.2f})")
-    c2.info(f"**Top underperforming team:** {low_team['team'].iloc[0]} ({low_team['goal_minus_xg'].iloc[0]:.2f})")
 
 with tab_teams:
     st.markdown("## 📊 Team Performance")
