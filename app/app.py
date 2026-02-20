@@ -99,8 +99,7 @@ ascending_gmxg = (view_mode.startswith("Underperformers"))
 tab_overview, tab_teams, tab_players = st.tabs(["Overview", "Teams", "Players"])
 
 with tab_overview:
-    with tab_overview:
-
+    
     # -----------------------
     # 1️⃣ Season Highlights (Top of page)
     # -----------------------
