@@ -145,7 +145,7 @@ with tab_overview:
     # 2️⃣ Model Performance (Bottom of page)
     # -----------------------
     st.divider()
-    st.markdown("## 🎯 Season Highlights")
+    st.markdown("## 📈 Model Performance")
 
     if metrics is None:
         st.info("Model metrics not found (reports/metrics.json). Run training to generate it.")
