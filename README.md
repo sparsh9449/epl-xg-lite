@@ -6,6 +6,19 @@ This project combines structured data engineering and applied machine learning t
 
 ---
 
+## 📸 Dashboard Preview
+
+### 🎯 Overview
+![Overview](assets/overview.png)
+
+### ⚖️ Teams – Goals vs Expected Goals
+![Teams](assets/teams.png)
+
+### 👤 Players – Over/Underperformance
+![Players](assets/players.png)
+
+---
+
 ## 📊 Problem
 
 Expected Goals (xG) models estimate the probability that a shot results in a goal.
@@ -174,3 +187,4 @@ Running the pipeline generates them locally.
 ## 📚 Data Source
 
 StatsBomb Open Data — English Premier League 2015/16
+
