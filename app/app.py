@@ -93,6 +93,8 @@ if player_team_df is not None:
 else:
     team_pick = "All teams"
 
+ascending_gmxg = (view_mode.startswith("Underperformers"))
+
 # ---- Tabs ----
 tab_overview, tab_teams, tab_players = st.tabs(["Overview", "Teams", "Players"])
 
