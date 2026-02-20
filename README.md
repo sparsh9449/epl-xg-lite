@@ -178,6 +178,28 @@ Running the pipeline generates them locally.
 
 ---
 
+## 🧰 Tech Stack
+
+**Languages & Core Libraries**
+- Python
+- Pandas
+- NumPy
+- Scikit-learn
+
+**Data & Storage**
+- Parquet
+- JSON (StatsBomb Open Data)
+
+**Visualization & App**
+- Streamlit
+- Altair
+
+**Modeling**
+- Logistic Regression
+- Probabilistic classification metrics (Log Loss, Brier Score, ROC-AUC)
+
+---
+
 ## 🧠 Future Improvements
 
 - Incorporate interaction features (e.g., distance × angle)
@@ -192,4 +214,5 @@ Running the pipeline generates them locally.
 ## 📚 Data Source
 
 StatsBomb Open Data — English Premier League 2015/16
+
 
