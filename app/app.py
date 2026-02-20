@@ -141,7 +141,7 @@ with tab_overview:
 with tab_teams:
     st.subheader("Team Table")
     team_sorted = team_df.sort_values(team_sort_metric, ascending=False).reset_index(drop=True)
-    st.dataframe(fmt_tables(team_sorted), use_container_width=True)
+    st.dataframe(fmt_tables(team_sorted).reset_index(drop=True), use_container_width=True)
 
     st.subheader("Goals vs Expected Goals (Teams)")
 
@@ -187,7 +187,7 @@ with tab_players:
 
     c1, c2 = st.columns([2, 1])
     with c1:
-        st.dataframe(fmt_tables(players_sorted), use_container_width=True)
+        st.dataframe(fmt_tables(players_sorted).reset_index(drop=True), use_container_width=True)
 
     with c2:
         st.write("### Top 10 (Goals − xG)")
