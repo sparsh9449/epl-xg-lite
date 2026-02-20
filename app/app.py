@@ -101,6 +101,22 @@ ascending_gmxg = (view_mode.startswith("Underperformers"))
 tab_overview, tab_teams, tab_players = st.tabs(["Overview", "Teams", "Players"])
 
 with tab_overview:
+
+    st.markdown("## 📦 Season Summary")
+    
+    total_shots = int(shots_df.shape[0])
+    total_goals = int(shots_df["is_goal"].sum())
+    total_xg = float(shots_df["xg"].sum())
+    avg_xg = float(shots_df["xg"].mean())
+    
+    c1, c2, c3, c4 = st.columns(4)
+    
+    c1.metric("Total Shots", f"{total_shots:,}")
+    c2.metric("Total Goals", f"{total_goals:,}")
+    c3.metric("Total xG", f"{total_xg:.1f}")
+    c4.metric("Avg xG per Shot", f"{avg_xg:.3f}")
+    
+    st.divider()
     
     # -----------------------
     # 1️⃣ Season Highlights (Top of page)
