@@ -35,7 +35,9 @@ def fmt_tables(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-st.title("⚽ EPL 2015/16 xG-lite Dashboard")
+st.markdown("# ⚽ EPL 2015/16 xG-lite Dashboard")
+st.markdown("Interactive expected goals analysis built with StatsBomb data.")
+st.markdown("---")
 
 # ---- Load data (with friendly errors) ----
 try:
@@ -58,7 +60,7 @@ except FileNotFoundError:
     metrics = None
 
 # ---- Sidebar controls ----
-st.sidebar.header("Team Controls")
+st.sidebar.markdown("### 🏟 Team Settings")
 team_sort_metric = st.sidebar.selectbox(
     "Sort teams by",
     ["goal_minus_xg", "xg", "goals", "shots"],
@@ -67,7 +69,7 @@ team_sort_metric = st.sidebar.selectbox(
 
 st.sidebar.divider()
 
-st.sidebar.header("Player Controls")
+st.sidebar.markdown("### 👤 Player Settings")
 min_shots = st.sidebar.slider("Minimum shots (players)", 10, 150, 30)
 
 view_mode = st.sidebar.radio(
@@ -103,7 +105,7 @@ with tab_overview:
     # -----------------------
     # 1️⃣ Season Highlights (Top of page)
     # -----------------------
-    st.subheader("Season Highlights")
+    st.markdown("## 🎯 Season Highlights")
 
     top_team = team_df.sort_values("goal_minus_xg", ascending=False).iloc[0]
     bottom_team = team_df.sort_values("goal_minus_xg", ascending=True).iloc[0]
@@ -143,7 +145,7 @@ with tab_overview:
     # 2️⃣ Model Performance (Bottom of page)
     # -----------------------
     st.divider()
-    st.subheader("Model Performance")
+    st.markdown("## 🎯 Season Highlights")
 
     if metrics is None:
         st.info("Model metrics not found (reports/metrics.json). Run training to generate it.")
@@ -189,11 +191,11 @@ with tab_overview:
     c2.info(f"**Top underperforming team:** {low_team['team'].iloc[0]} ({low_team['goal_minus_xg'].iloc[0]:.2f})")
 
 with tab_teams:
-    st.subheader("Team Table")
+    st.markdown("## 📊 Team Performance")
     team_sorted = team_df.sort_values(team_sort_metric, ascending=False).reset_index(drop=True)
     st.dataframe(fmt_tables(team_sorted), use_container_width=True, hide_index=True)
 
-    st.subheader("Goals vs Expected Goals (Teams)")
+    st.markdown("### ⚖️ Goals vs Expected Goals")
     
     chart_df = team_df.copy()
     chart_df["goal_minus_xg"] = chart_df["goal_minus_xg"].round(2)
@@ -228,7 +230,7 @@ with tab_teams:
     st.altair_chart(scatter + ref, use_container_width=True)
 
 with tab_players:
-    st.subheader("Player Table")
+    st.markdown("## 🧍 Player Performance")
 
     # Choose player dataset
     if player_team_df is not None and team_pick != "All teams":
