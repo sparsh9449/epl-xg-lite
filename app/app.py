@@ -1,106 +1,198 @@
-import streamlit as st
-import pandas as pd
 import json
 from pathlib import Path
-import altair as alt
 
-st.set_page_config(layout="wide")
+import altair as alt
+import pandas as pd
+import streamlit as st
+
+st.set_page_config(page_title="EPL xG-lite", layout="wide")
 
 TEAM_PATH = Path("data/gold/team_metrics_2015_16.parquet")
 PLAYER_PATH = Path("data/gold/player_metrics_2015_16.parquet")
+PLAYER_TEAM_PATH = Path("data/gold/player_team_metrics_2015_16.parquet")
 METRICS_PATH = Path("reports/metrics.json")
+
+
+@st.cache_data
+def load_parquet(path: Path) -> pd.DataFrame:
+    return pd.read_parquet(path)
+
+
+@st.cache_data
+def load_json(path: Path) -> dict:
+    with open(path) as f:
+        return json.load(f)
+
+
+def fmt_tables(df: pd.DataFrame) -> pd.DataFrame:
+    out = df.copy()
+    for c in ["shots", "goals"]:
+        if c in out.columns:
+            out[c] = out[c].astype(int)
+    for c in ["xg", "goal_minus_xg"]:
+        if c in out.columns:
+            out[c] = out[c].round(2)
+    return out
+
 
 st.title("⚽ EPL 2015/16 xG-lite Dashboard")
 
-# Load data
-team_df = pd.read_parquet(TEAM_PATH)
-player_df = pd.read_parquet(PLAYER_PATH)
+# ---- Load data (with friendly errors) ----
+try:
+    team_df = load_parquet(TEAM_PATH)
+    player_df = load_parquet(PLAYER_PATH)
+except FileNotFoundError:
+    st.error("Missing aggregated parquet files. Run the pipeline (or at least aggregate_metrics.py) first.")
+    st.stop()
 
-with open(METRICS_PATH) as f:
-    metrics = json.load(f)
+player_team_df = None
+try:
+    player_team_df = load_parquet(PLAYER_TEAM_PATH)
+except FileNotFoundError:
+    # We'll show a note in the UI; the dashboard still works without it.
+    pass
 
-# ---------- Model Metrics ----------
-st.subheader("Model Performance")
-col1, col2, col3 = st.columns(3)
-col1.metric("Log Loss", round(metrics["log_loss"], 3))
-col2.metric("Brier Score", round(metrics["brier_score"], 3))
-col3.metric("ROC-AUC", round(metrics["roc_auc"], 3))
+try:
+    metrics = load_json(METRICS_PATH)
+except FileNotFoundError:
+    metrics = None
 
-with st.expander("About the Model"):
-    st.write(
-        """
-        **xG-lite** estimates the probability a shot becomes a goal.
+# ---- Sidebar controls ----
+st.sidebar.header("Controls")
 
-        **Features used**
-        - Distance to goal
-        - Shot angle
-        - Header indicator
-        - Penalty indicator
-
-        **Model**
-        - Logistic Regression
-
-        **Metrics**
-        - *Log Loss*: lower is better (probability quality)
-        - *Brier Score*: lower is better (calibration / squared error)
-        - *ROC-AUC*: higher is better (ranking ability)
-        """
-    )
-
-st.divider()
-
-# ---------- Team Performance ----------
-st.subheader("Team Performance")
-
-sort_metric = st.selectbox(
+team_sort_metric = st.sidebar.selectbox(
     "Sort teams by",
     ["goal_minus_xg", "xg", "goals", "shots"],
-    index=0
+    index=0,
 )
 
-team_sorted = team_df.sort_values(sort_metric, ascending=False).reset_index(drop=True)
-st.dataframe(team_sorted, use_container_width=True)
+min_shots = st.sidebar.slider("Minimum shots (players)", 10, 150, 30)
 
-st.subheader("Goals vs Expected Goals (Teams)")
-
-scatter = (
-    alt.Chart(team_df)
-    .mark_circle(size=120)
-    .encode(
-        x=alt.X("xg:Q", title="Total xG"),
-        y=alt.Y("goals:Q", title="Total Goals"),
-        tooltip=["team:N", "shots:Q", "xg:Q", "goals:Q", "goal_minus_xg:Q"],
-    )
-    .interactive()
+view_mode = st.sidebar.radio(
+    "Player view",
+    ["Overperformers (Goals − xG)", "Underperformers (Goals − xG)"],
+    index=0,
 )
-st.altair_chart(scatter, use_container_width=True)
 
-st.divider()
-
-# ---------- Player Performance ----------
-st.subheader("Player Performance")
-
-min_shots = st.slider("Minimum Shots", 10, 120, 30)
-
-filtered_players = player_df[player_df["shots"] >= min_shots].copy()
-
-player_sort_metric = st.selectbox(
+player_sort_metric = st.sidebar.selectbox(
     "Sort players by",
     ["goal_minus_xg", "xg", "goals", "shots"],
-    index=0
+    index=0,
 )
 
-players_sorted = filtered_players.sort_values(player_sort_metric, ascending=False).reset_index(drop=True)
-st.dataframe(players_sorted, use_container_width=True)
+player_search = st.sidebar.text_input("Search player (optional)", "")
 
-st.subheader("Top 10 Overperforming Players (Goals − xG)")
-top10 = (
-    filtered_players.sort_values("goal_minus_xg", ascending=False)
-    .head(10)
-    .set_index("player")
-)
+if player_team_df is not None:
+    team_pick = st.sidebar.selectbox(
+        "Filter players by team",
+        ["All teams"] + sorted(player_team_df["team"].unique().tolist()),
+        index=0,
+    )
+else:
+    team_pick = "All teams"
 
-st.bar_chart(top10["goal_minus_xg"])
+ascending_gmxg = (view_mode.startswith("Underperformers"))
 
-st.caption("xG-lite model using distance, angle, header, and penalty features.")
+# ---- Tabs ----
+tab_overview, tab_teams, tab_players = st.tabs(["Overview", "Teams", "Players"])
 
+with tab_overview:
+    st.subheader("Model Performance")
+    if metrics is None:
+        st.info("Model metrics not found (reports/metrics.json). Run training to generate it.")
+    else:
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Log Loss", round(metrics["log_loss"], 3))
+        c2.metric("Brier Score", round(metrics["brier_score"], 3))
+        c3.metric("ROC-AUC", round(metrics["roc_auc"], 3))
+
+        with st.expander("About the Model"):
+            st.write(
+                """
+                **xG-lite** estimates the probability that a shot becomes a goal.
+
+                **Features**
+                - Distance to goal
+                - Shot angle
+                - Header indicator
+                - Penalty indicator
+
+                **Model**
+                - Logistic Regression
+
+                **Metrics**
+                - **Log Loss**: lower is better (probability quality)
+                - **Brier Score**: lower is better (calibration / squared error)
+                - **ROC-AUC**: higher is better (ranking ability)
+                """
+            )
+
+    st.divider()
+
+    # Quick callouts
+    ttmp = team_df.copy()
+    top_team = ttmp.sort_values("goal_minus_xg", ascending=False).head(1)
+    low_team = ttmp.sort_values("goal_minus_xg", ascending=True).head(1)
+
+    c1, c2 = st.columns(2)
+    c1.info(f"**Top overperforming team:** {top_team['team'].iloc[0]} ({top_team['goal_minus_xg'].iloc[0]:.2f})")
+    c2.info(f"**Top underperforming team:** {low_team['team'].iloc[0]} ({low_team['goal_minus_xg'].iloc[0]:.2f})")
+
+with tab_teams:
+    st.subheader("Team Table")
+    team_sorted = team_df.sort_values(team_sort_metric, ascending=False).reset_index(drop=True)
+    st.dataframe(fmt_tables(team_sorted), use_container_width=True)
+
+    st.subheader("Goals vs Expected Goals (Teams)")
+
+    scatter = (
+        alt.Chart(team_df)
+        .mark_circle(size=120)
+        .encode(
+            x=alt.X("xg:Q", title="Total xG"),
+            y=alt.Y("goals:Q", title="Total Goals"),
+            tooltip=["team:N", "shots:Q", "xg:Q", "goals:Q", "goal_minus_xg:Q"],
+        )
+        .interactive()
+    )
+
+    # Add a y=x reference line for context
+    min_v = float(min(team_df["xg"].min(), team_df["goals"].min()))
+    max_v = float(max(team_df["xg"].max(), team_df["goals"].max()))
+    ref = alt.Chart(pd.DataFrame({"x": [min_v, max_v], "y": [min_v, max_v]})).mark_line().encode(x="x", y="y")
+
+    st.altair_chart(scatter + ref, use_container_width=True)
+
+with tab_players:
+    st.subheader("Player Table")
+
+    # Choose player dataset
+    if player_team_df is not None and team_pick != "All teams":
+        base_players = player_team_df[player_team_df["team"] == team_pick].copy()
+    else:
+        base_players = player_df.copy()
+
+    # Apply filters
+    base_players = base_players[base_players["shots"] >= min_shots].copy()
+
+    if player_search.strip():
+        base_players = base_players[
+            base_players["player"].str.contains(player_search.strip(), case=False, na=False)
+        ].copy()
+
+    players_sorted = base_players.sort_values(player_sort_metric, ascending=False).reset_index(drop=True)
+
+    # Show over/under view ordering by goal_minus_xg too
+    ranked = base_players.sort_values("goal_minus_xg", ascending=ascending_gmxg).reset_index(drop=True)
+
+    c1, c2 = st.columns([2, 1])
+    with c1:
+        st.dataframe(fmt_tables(players_sorted), use_container_width=True)
+
+    with c2:
+        st.write("### Top 10 (Goals − xG)")
+        top10 = ranked.head(10).set_index("player")
+        st.bar_chart(top10["goal_minus_xg"])
+
+    if player_team_df is None:
+        st.info("Team filter requires player_team_metrics_2015_16.parquet. Run aggregate_metrics.py after updating it.")
