@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.env
+
+# Data / artifacts
+data/
+!data/bronze/.gitkeep
+!data/silver/.gitkeep
+!data/gold/.gitkeep
+models/
+reports/
+
+# OS
+.DS_Store
+
+# Streamlit
+.streamlit/
+
