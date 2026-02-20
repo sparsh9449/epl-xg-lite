@@ -1,9 +1,10 @@
 pandas
 numpy
-scikit-learn
-duckdb
+requests
 pyarrow
+duckdb
+scikit-learn
 streamlit
 plotly
 joblib
-
+altair
