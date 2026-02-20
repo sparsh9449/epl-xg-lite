@@ -2,7 +2,9 @@
 
 End-to-end Expected Goals (xG) modeling pipeline built using StatsBomb Open Data.
 
-This project combines structured data engineering and applied machine learning to build a reproducible xG workflow from raw event data to an interactive analytics dashboard.
+This project demonstrates how to design and ship a structured machine learning system — from raw event data ingestion to feature engineering, model training, evaluation, and interactive analytics dashboard delivery.
+
+While built using the 2015/16 EPL season, the pipeline is modular and can be extended to additional seasons with minimal modification.
 
 ---
 
@@ -30,7 +32,19 @@ This project builds a clean "xG-lite" baseline model using:
 - Header indicator  
 - Penalty indicator  
 
-The objective was not just to train a model — but to design a modular, production-style data pipeline.
+The objective was not simply to train a model, but to architect a modular, production-style analytics workflow that mirrors real-world data science pipelines.
+
+---
+
+## 🎯 What This Project Demonstrates
+
+- Structured multi-layer data pipeline (Bronze/Silver/Gold)
+- Feature engineering from spatial event data
+- Logistic regression modeling & evaluation
+- Proper probabilistic metrics (log loss, Brier, ROC-AUC)
+- Aggregation & analytics layer
+- Interactive dashboard for stakeholder exploration
+- Reproducibility and modular code design
 
 ---
 
@@ -99,11 +113,13 @@ Train/validation split: 80/20 (stratified)
 
 Goal rate: ~10%
 
-The model achieves strong baseline predictive performance using minimal geometric features.
+Despite using only four interpretable geometric features, the model achieves strong baseline discrimination and calibration, illustrating the predictive power of spatial shot characteristics.
 
 ---
 
 ## 📈 Interactive Dashboard
+
+The Streamlit dashboard surfaces model outputs in an exploratory analytics interface designed for intuitive stakeholder consumption.
 
 The Streamlit dashboard provides:
 
@@ -162,25 +178,14 @@ Running the pipeline generates them locally.
 
 ---
 
-## 🎯 What This Project Demonstrates
-
-- Structured multi-layer data pipeline (Bronze/Silver/Gold)
-- Feature engineering from spatial event data
-- Logistic regression modeling & evaluation
-- Proper probabilistic metrics (log loss, Brier, ROC-AUC)
-- Aggregation & analytics layer
-- Interactive dashboard for stakeholder exploration
-- Reproducibility and modular code design
-
----
-
 ## 🧠 Future Improvements
 
-- Shot location heatmaps  
-- Interaction features (distance × angle)  
-- Calibration curve visualization  
-- Multi-season training  
-- Cloud deployment  
+- Incorporate interaction features (e.g., distance × angle)
+- Add shot location heatmaps and spatial visualizations
+- Evaluate calibration curves and probability reliability
+- Train on multiple seasons for improved generalization
+- Compare logistic regression with tree-based models (e.g., XGBoost)
+- Containerize and deploy via cloud infrastructure
 
 ---
 
