@@ -99,7 +99,53 @@ ascending_gmxg = (view_mode.startswith("Underperformers"))
 tab_overview, tab_teams, tab_players = st.tabs(["Overview", "Teams", "Players"])
 
 with tab_overview:
+    with tab_overview:
+
+    # -----------------------
+    # 1️⃣ Season Highlights (Top of page)
+    # -----------------------
+    st.subheader("Season Highlights")
+
+    top_team = team_df.sort_values("goal_minus_xg", ascending=False).iloc[0]
+    bottom_team = team_df.sort_values("goal_minus_xg", ascending=True).iloc[0]
+
+    top_player = player_df.sort_values("goal_minus_xg", ascending=False).iloc[0]
+    top_xg_player = player_df.sort_values("xg", ascending=False).iloc[0]
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Top Overperforming Team",
+            top_team["team"],
+            f"{top_team['goal_minus_xg']:.2f} Goals − xG",
+        )
+
+        st.metric(
+            "Top Overperforming Player",
+            top_player["player"],
+            f"{top_player['goal_minus_xg']:.2f} Goals − xG",
+        )
+
+    with col2:
+        st.metric(
+            "Top Underperforming Team",
+            bottom_team["team"],
+            f"{bottom_team['goal_minus_xg']:.2f} Goals − xG",
+        )
+
+        st.metric(
+            "Most xG Player",
+            top_xg_player["player"],
+            f"{top_xg_player['xg']:.2f} xG",
+        )
+
+    # -----------------------
+    # 2️⃣ Model Performance (Bottom of page)
+    # -----------------------
+    st.divider()
     st.subheader("Model Performance")
+
     if metrics is None:
         st.info("Model metrics not found (reports/metrics.json). Run training to generate it.")
     else:
@@ -108,26 +154,29 @@ with tab_overview:
         c2.metric("Brier Score", round(metrics["brier_score"], 3))
         c3.metric("ROC-AUC", round(metrics["roc_auc"], 3))
 
-        with st.expander("About the Model"):
-            st.write(
-                """
-                **xG-lite** estimates the probability that a shot becomes a goal.
+    # -----------------------
+    # 3️⃣ About the Model (Very Bottom)
+    # -----------------------
+    with st.expander("About the Model"):
+        st.write(
+            """
+            **xG-lite** estimates the probability that a shot becomes a goal.
 
-                **Features**
-                - Distance to goal
-                - Shot angle
-                - Header indicator
-                - Penalty indicator
+            **Features**
+            - Distance to goal
+            - Shot angle
+            - Header indicator
+            - Penalty indicator
 
-                **Model**
-                - Logistic Regression
+            **Model**
+            - Logistic Regression
 
-                **Metrics**
-                - **Log Loss**: lower is better (probability quality)
-                - **Brier Score**: lower is better (calibration / squared error)
-                - **ROC-AUC**: higher is better (ranking ability)
-                """
-            )
+            **Metrics**
+            - **Log Loss**: lower is better (probability quality)
+            - **Brier Score**: lower is better (calibration / squared error)
+            - **ROC-AUC**: higher is better (ranking ability)
+            """
+        )
 
     st.divider()
 
