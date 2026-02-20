@@ -255,8 +255,28 @@ with tab_players:
 
     with c2:
         st.write("### Top 10 (Goals − xG)")
-        top10 = ranked.head(10).set_index("player")
-        st.bar_chart(top10["goal_minus_xg"])
+        
+        chart_df = ranked.head(10).copy()
+        chart_df["goal_minus_xg"] = chart_df["goal_minus_xg"].round(2)
+        chart_df["xg"] = chart_df["xg"].round(2)
+        
+        bar = (
+            alt.Chart(chart_df)
+            .mark_bar()
+            .encode(
+                x=alt.X("goal_minus_xg:Q", title="Goals − xG"),
+                y=alt.Y("player:N", sort="-x", title=""),
+                tooltip=[
+                    alt.Tooltip("player:N", title="Player"),
+                    alt.Tooltip("shots:Q", title="Shots"),
+                    alt.Tooltip("goals:Q", title="Goals"),
+                    alt.Tooltip("xg:Q", title="xG"),
+                    alt.Tooltip("goal_minus_xg:Q", title="Goals − xG"),
+                ],
+            )
+        )
+        
+        st.altair_chart(bar, use_container_width=True)
 
     if player_team_df is None:
         st.info("Team filter requires player_team_metrics_2015_16.parquet. Run aggregate_metrics.py after updating it.")
