@@ -194,23 +194,37 @@ with tab_teams:
     st.dataframe(fmt_tables(team_sorted), use_container_width=True, hide_index=True)
 
     st.subheader("Goals vs Expected Goals (Teams)")
-
+    
+    chart_df = team_df.copy()
+    chart_df["goal_minus_xg"] = chart_df["goal_minus_xg"].round(2)
+    chart_df["xg"] = chart_df["xg"].round(2)
+    chart_df["goals"] = chart_df["goals"].astype(int)
+    
+    min_v = float(min(chart_df["xg"].min(), chart_df["goals"].min()))
+    max_v = float(max(chart_df["xg"].max(), chart_df["goals"].max()))
+    
     scatter = (
-        alt.Chart(team_df)
+        alt.Chart(chart_df)
         .mark_circle(size=120)
         .encode(
             x=alt.X("xg:Q", title="Total xG"),
             y=alt.Y("goals:Q", title="Total Goals"),
-            tooltip=["team:N", "shots:Q", "xg:Q", "goals:Q", "goal_minus_xg:Q"],
+            tooltip=[
+                alt.Tooltip("team:N", title="Team"),
+                alt.Tooltip("xg:Q", title="xG"),
+                alt.Tooltip("goals:Q", title="Goals"),
+                alt.Tooltip("goal_minus_xg:Q", title="Goals − xG"),
+            ],
         )
         .interactive()
     )
-
-    # Add a y=x reference line for context
-    min_v = float(min(team_df["xg"].min(), team_df["goals"].min()))
-    max_v = float(max(team_df["xg"].max(), team_df["goals"].max()))
-    ref = alt.Chart(pd.DataFrame({"x": [min_v, max_v], "y": [min_v, max_v]})).mark_line().encode(x="x", y="y")
-
+    
+    ref = (
+        alt.Chart(pd.DataFrame({"x": [min_v, max_v], "y": [min_v, max_v]}))
+        .mark_line(strokeDash=[6, 6])
+        .encode(x="x:Q", y="y:Q")
+    )
+    
     st.altair_chart(scatter + ref, use_container_width=True)
 
 with tab_players:
