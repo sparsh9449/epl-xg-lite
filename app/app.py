@@ -104,10 +104,10 @@ with tab_overview:
 
     st.markdown("## 📦 Season Summary")
     
-    total_shots = int(shots_df.shape[0])
-    total_goals = int(shots_df["is_goal"].sum())
-    total_xg = float(shots_df["xg"].sum())
-    avg_xg = float(shots_df["xg"].mean())
+    total_shots = int(team_df["shots"].sum())
+    total_goals = int(team_df["goals"].sum())
+    total_xg = float(team_df["xg"].sum())
+    avg_xg = total_xg / total_shots
     
     c1, c2, c3, c4 = st.columns(4)
     
