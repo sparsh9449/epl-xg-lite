@@ -58,14 +58,16 @@ except FileNotFoundError:
     metrics = None
 
 # ---- Sidebar controls ----
-st.sidebar.header("Controls")
-
+st.sidebar.header("Team Controls")
 team_sort_metric = st.sidebar.selectbox(
     "Sort teams by",
     ["goal_minus_xg", "xg", "goals", "shots"],
     index=0,
 )
 
+st.sidebar.divider()
+
+st.sidebar.header("Player Controls")
 min_shots = st.sidebar.slider("Minimum shots (players)", 10, 150, 30)
 
 view_mode = st.sidebar.radio(
@@ -90,8 +92,6 @@ if player_team_df is not None:
     )
 else:
     team_pick = "All teams"
-
-ascending_gmxg = (view_mode.startswith("Underperformers"))
 
 # ---- Tabs ----
 tab_overview, tab_teams, tab_players = st.tabs(["Overview", "Teams", "Players"])
